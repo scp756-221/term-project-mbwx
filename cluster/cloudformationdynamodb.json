@@ -4,7 +4,7 @@
       "tableMusic": {
         "Type": "AWS::DynamoDB::Table",
         "Properties": {
-          "TableName": "Music-meganhfowler",
+          "TableName": "Music",
           "AttributeDefinitions": [
             {
               "AttributeName": "music_id",
@@ -26,7 +26,7 @@
       "tableUsers": {
         "Type": "AWS::DynamoDB::Table",
         "Properties": {
-          "TableName": "User-meganhfowler",
+          "TableName": "User",
           "AttributeDefinitions": [
             {
               "AttributeName": "user_id",
