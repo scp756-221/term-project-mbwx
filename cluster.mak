@@ -14,6 +14,19 @@ KVER=1.21
 # Keep all the logs out of main directory
 LOG_DIR=logs
 
+# Need to switch this PERSONAL INFO
+CREG=docker.io
+REGID=meganhfowler
+
+
+# Create and control the cluster
+cluster-up:
+	make -f cluster.mak start
+	make -f cluster.mak name
+	make -f cluster.mak istio
+	make -f cluster.mak showcontext
+	make -f cluster.mak describe
+	make -f cluster.mak lsa
 
 # Start and stop cluster
 start: showcontext
@@ -68,3 +81,35 @@ describe:
 
 lsa: showcontext
 	kubectl get svc --all-namespaces
+
+
+
+
+# DEPLOYMENT
+# --- registry-login: Login to the container registry
+#
+registry-login:
+	@/bin/sh -c 'cat cluster/${CREG}-token.txt | docker login $(CREG) -u $(REGID) --password-stdin'
+
+
+# Build and push images to the CR
+cri: $(LOG_DIR)/s2-v1.repo.log
+
+# Build the s2 service
+$(LOG_DIR)/s2-v1.repo.log: s2/v1/Dockerfile s2/v1/app.py s2/v1/requirements.txt
+	make -f cluster.mak  --no-print-directory registry-login
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756s2:v1 s2/v1 | sudo tee $(LOG_DIR)/s2-v1.img.log
+	docker push $(CREG)/$(REGID)/cmpt756s2:v1 | sudo tee $(LOG_DIR)/s2-v1.repo.log
+
+# Update S2 and associated monitoring, rebuilding if necessary
+s2: rollout-s2 cluster/s2-svc.yaml cluster/s2-sm.yaml cluster/s2-vs.yaml
+	kubectl -n $(NS) apply -f cluster/s2-svc.yaml | sudo tee $(LOG_DIR)/s2.log
+	kubectl -n $(NS) apply -f cluster/s2-sm.yaml | sudo tee -a $(LOG_DIR)/s2.log
+	kubectl -n $(NS) apply -f cluster/s2-vs.yaml | sudo tee -a $(LOG_DIR)/s2.log
+
+# --- rollout-s2: Rollout a new deployment of S2
+rollout-s2: $(LOG_DIR)/s2-v1.repo.log  cluster/s2-dpl-v1.yaml
+	kubectl -n $(NS) apply -f cluster/s2-dpl-v1.yaml | sudo tee $(LOG_DIR)/rollout-s2.log
+	kubectl rollout -n $(NS) restart deployment/cmpt756s2-v1 | sudo tee -a $(LOG_DIR)/rollout-s2.log
+
+
