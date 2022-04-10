@@ -22,7 +22,7 @@ To start gatling test, we need a script to connect with cluster and gatling. We 
 **SIM_NAME** is the name of the simulation that will be run. Here it should be one of ReadUserSim, ReadMusicSim or ReadBothVaryingSim. \
 **–label** is used by kill-gatling.sh to stop the simulation
 
-## Running the Gatling
+## Running Gatling
 With everything set up, we can now run the Gatling script. It will return the code of docker image. Checking the logs by the command `docker logs ${image code}` to get the testing result. It should have similar result with following screenshot:
 ![](/gatling/src/image2.png) \
 The number of **OK** is the number of success requests, and the number of **KO** is the number of failed requests. \
