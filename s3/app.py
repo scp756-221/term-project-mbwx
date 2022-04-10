@@ -71,7 +71,7 @@ def get_book(book_id):
         return Response(json.dumps({"error": "missing auth"}),
                         status=401,
                         mimetype='application/json')
-    payload = {"objtype": "music", "objkey": book_id}
+    payload = {"objtype": "book", "objkey": book_id}
     url = db['name'] + '/' + db['endpoint'][0]
     response = requests.get(
         url,

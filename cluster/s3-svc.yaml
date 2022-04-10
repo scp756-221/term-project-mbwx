@@ -24,7 +24,7 @@ metadata:
     app: cmpt756s3
 spec:
   ports:
-  - port: 30001
+  - port: 30003
     name: http
   selector:
     app: cmpt756s3

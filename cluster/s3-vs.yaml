@@ -34,14 +34,14 @@ spec:
   http:
   - match:
     - uri:
-        prefix: /api/v1/music
+        prefix: /api/v1/book
     rewrite:
-      uri: /api/v1/music
+      uri: /api/v1/book
     route:
     - weight: 100
       destination:
         host: cmpt756s3
         port:
-          number: 30001
+          number: 30003
         subset: v1
 
