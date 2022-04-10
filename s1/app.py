@@ -82,7 +82,7 @@ def update_user(user_id):
         params={"objtype": "user", "objkey": user_id},
         json={"email": email, "fname": fname, "lname": lname},
     )
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/", methods=["POST"])
@@ -103,7 +103,7 @@ def create_user():
     response = requests.post(
         url, json={"objtype": "user", "lname": lname, "email": email, "fname": fname}
     )
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/<user_id>", methods=["DELETE"])
@@ -119,7 +119,7 @@ def delete_user(user_id):
     url = db["name"] + "/" + db["endpoint"][2]
 
     response = requests.delete(url, params={"objtype": "user", "objkey": user_id})
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/<user_id>", methods=["GET"])
@@ -135,7 +135,7 @@ def get_user(user_id):
     payload = {"objtype": "user", "objkey": user_id}
     url = db["name"] + "/" + db["endpoint"][0]
     response = requests.get(url, params=payload)
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/login", methods=["PUT"])

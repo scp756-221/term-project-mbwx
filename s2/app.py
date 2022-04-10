@@ -76,7 +76,8 @@ def get_song(music_id):
     response = requests.get(
         url, params=payload, headers={"Authorization": headers["Authorization"]}
     )
-    return response.json()
+    print(response)
+    return (response.json())
 
 
 @bp.route("/", methods=["POST"])
@@ -101,7 +102,7 @@ def create_song():
         json={"objtype": "music", "Artist": Artist, "SongTitle": SongTitle},
         headers={"Authorization": headers["Authorization"]},
     )
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/<music_id>", methods=["DELETE"])
@@ -120,7 +121,7 @@ def delete_song(music_id):
         params={"objtype": "music", "objkey": music_id},
         headers={"Authorization": headers["Authorization"]},
     )
-    return response.json()
+    return (response.json())
 
 
 # All database calls will have this prefix.  Prometheus metric

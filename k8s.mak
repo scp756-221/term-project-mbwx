@@ -15,8 +15,8 @@
 # Where possible, stodout outputs are tee into .out files for later review.
 
 # These will be filled in by template processor
-CREG=docker.io
-REGID=meganhfowler
+CREG=ghcr.io
+REGID=wla194-tommy
 AWS_REGION=us-west-2
 
 # Keep all the logs out of main directory
