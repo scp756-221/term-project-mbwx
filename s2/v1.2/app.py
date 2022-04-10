@@ -5,6 +5,7 @@ Sample application---music service.
 
 # Standard library modules
 import logging
+import os
 import sys
 
 # Installed packages
@@ -20,6 +21,11 @@ import requests
 import simplejson as json
 
 # Local modules
+import unique_code
+
+# The unique exercise code
+# The EXER environment variable has a value specific to this exercise
+ucode = unique_code.exercise_hash(os.getenv('EXER'))
 
 # The application
 
@@ -118,6 +124,15 @@ def delete_song(music_id):
     return (response.json())
 
 
+@bp.route('/test', methods=['GET'])
+def test():
+    # This value is for user scp756-221
+    if ('d56c6cca5ac33c34b13e5d833f64049264d52b5a495ce92c1ed97a21bcb812cc' !=
+            ucode):
+        raise Exception("Test failed")
+    return {}
+
+
 # All database calls will have this prefix.  Prometheus metric
 # calls will not---they will have route '/metrics'.  This is
 # the conventional organization.
@@ -128,6 +143,7 @@ if __name__ == '__main__':
         logging.error("missing port arg 1")
         sys.exit(-1)
 
+    app.logger.error("Unique code: {}".format(ucode))
     p = int(sys.argv[1])
     # Do not set debug=True---that will disable the Prometheus metrics
     app.run(host='0.0.0.0', port=p, threaded=True)
