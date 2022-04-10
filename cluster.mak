@@ -22,6 +22,16 @@ LOG_DIR=logs
 CREG=docker.io
 REGID=meganhfowler
 
+# Launch app
+launch:
+	make -f cluster.mak cluster-up
+	make -f cluster.mak cri
+	make -f cluster.mak db
+	make -f cluster.mak s1
+	make -f cluster.mak s2
+	make -f cluster.mak s3
+	make -f cluster.mak gw
+
 
 # Create and control the cluster
 cluster-up:
