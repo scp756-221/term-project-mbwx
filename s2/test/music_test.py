@@ -15,23 +15,15 @@ import requests
 
 # The services check only that we pass an authorization,
 # not whether it's valid
-DEFAULT_AUTH = 'Bearer A'
+DEFAULT_AUTH = "Bearer A"
 
 
 def parse_args():
     argp = argparse.ArgumentParser(
-        'music_test',
-        description='Simple test of music service'
-        )
-    argp.add_argument(
-        'name',
-        help="DNS name or IP address of music server"
-        )
-    argp.add_argument(
-        'port',
-        type=int,
-        help="Port number of music server"
-        )
+        "music_test", description="Simple test of music service"
+    )
+    argp.add_argument("name", help="DNS name or IP address of music server")
+    argp.add_argument("port", type=int, help="Port number of music server")
     return argp.parse_args()
 
 
@@ -41,23 +33,17 @@ def get_url(name, port):
 
 def test(args):
     url = get_url(args.name, args.port)
-    r = requests.get(
-        url+'test',
-        headers={'Authorization': DEFAULT_AUTH}
-        )
+    r = requests.get(url + "test", headers={"Authorization": DEFAULT_AUTH})
     return r.status_code
 
 
 def shutdown(args):
     url = get_url(args.name, args.port)
-    r = requests.get(
-        url+'shutdown',
-        headers={'Authorization': DEFAULT_AUTH}
-        )
+    r = requests.get(url + "shutdown", headers={"Authorization": DEFAULT_AUTH})
     return r.status_code
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_args()
     trc = test(args)
     src = shutdown(args)
