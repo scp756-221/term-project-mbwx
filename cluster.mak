@@ -11,6 +11,10 @@ NTYPE=t3.medium
 REGION=us-west-2
 KVER=1.21
 
+# App Version
+APP_VER = v1
+LOADER_VER = v1
+
 # Keep all the logs out of main directory
 LOG_DIR=logs
 
@@ -93,13 +97,48 @@ registry-login:
 
 
 # Build and push images to the CR
-cri: $(LOG_DIR)/s2-v1.repo.log
+cri: $(LOG_DIR)/s1.repo.log $(LOG_DIR)/s2.repo.log $(LOG_DIR)/s3.repo.log $(LOG_DIR)/db.repo.log
+
+# --- BUILDS
+# Build the s1 service
+$(LOG_DIR)/s1.repo.log: s1/Dockerfile s1/app.py s1/requirements.txt
+	make -f cluster.mak --no-print-directory registry-login
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756s1:$(APP_VER) s1 | sudo tee $(LOG_DIR)/s1.img.log
+	docker push $(CREG)/$(REGID)/cmpt756s1:$(APP_VER) | sudo tee $(LOG_DIR)/s1.repo.log
 
 # Build the s2 service
-$(LOG_DIR)/s2-v1.repo.log: s2/v1/Dockerfile s2/v1/app.py s2/v1/requirements.txt
+$(LOG_DIR)/s2.repo.log: s2/Dockerfile s2/app.py s2/requirements.txt
 	make -f cluster.mak  --no-print-directory registry-login
-	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756s2:v1 s2/v1 | sudo tee $(LOG_DIR)/s2-v1.img.log
-	docker push $(CREG)/$(REGID)/cmpt756s2:v1 | sudo tee $(LOG_DIR)/s2-v1.repo.log
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756s2:$(APP_VER) s2 | sudo tee $(LOG_DIR)/s2.img.log
+	docker push $(CREG)/$(REGID)/cmpt756s2:$(APP_VER) | sudo tee $(LOG_DIR)/s2.repo.log
+
+# Build the s3 service
+$(LOG_DIR)/s3.repo.log: s3/Dockerfile s3/app.py s3/requirements.txt
+	make -f cluster.mak  --no-print-directory registry-login
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756s3:$(APP_VER) s3 | sudo tee $(LOG_DIR)/s3.img.log
+	docker push $(CREG)/$(REGID)/cmpt756s3:$(APP_VER) | sudo tee $(LOG_DIR)/s3.repo.log
+
+# Build the db service
+$(LOG_DIR)/db.repo.log: db/Dockerfile db/app.py db/requirements.txt
+	make -f cluster.mak --no-print-directory registry-login
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756db:$(APP_VER) db | sudo tee $(LOG_DIR)/db.img.log
+	docker push $(CREG)/$(REGID)/cmpt756db:$(APP_VER) | sudo tee $(LOG_DIR)/db.repo.log
+
+# Build the loader
+$(LOG_DIR)/loader.repo.log: loader/app.py loader/requirements.txt loader/Dockerfile registry-login
+	docker build --platform x86_64 -t $(CREG)/$(REGID)/cmpt756loader:$(LOADER_VER) loader  | sudo tee $(LOG_DIR)/loader.img.log
+	docker push $(CREG)/$(REGID)/cmpt756loader:$(LOADER_VER) | sudo tee $(LOG_DIR)/loader.repo.log
+
+# --- UPDATES
+# Update service gateway
+gw: cluster/service-gateway.yaml
+	kubectl -n $(NS) apply -f $< | sudo tee $(LOG_DIR)/gw.log
+
+# Update S1 and associated monitoring, rebuilding if necessary
+s1: $(LOG_DIR)/s1.repo.log cluster/s1.yaml cluster/s1-sm.yaml cluster/s1-vs.yaml
+	kubectl -n $(NS) apply -f cluster/s1.yaml | sudo tee $(LOG_DIR)/s1.log
+	kubectl -n $(NS) apply -f cluster/s1-sm.yaml | sudo tee -a $(LOG_DIR)/s1.log
+	kubectl -n $(NS) apply -f cluster/s1-vs.yaml | sudo tee -a $(LOG_DIR)/s1.log
 
 # Update S2 and associated monitoring, rebuilding if necessary
 s2: rollout-s2 cluster/s2-svc.yaml cluster/s2-sm.yaml cluster/s2-vs.yaml
@@ -107,9 +146,36 @@ s2: rollout-s2 cluster/s2-svc.yaml cluster/s2-sm.yaml cluster/s2-vs.yaml
 	kubectl -n $(NS) apply -f cluster/s2-sm.yaml | sudo tee -a $(LOG_DIR)/s2.log
 	kubectl -n $(NS) apply -f cluster/s2-vs.yaml | sudo tee -a $(LOG_DIR)/s2.log
 
-# --- rollout-s2: Rollout a new deployment of S2
-rollout-s2: $(LOG_DIR)/s2-v1.repo.log  cluster/s2-dpl-v1.yaml
+# Update S3 and associated monitoring, rebuilding if necessary
+s3: rollout-s3 cluster/s3-svc.yaml cluster/s3-sm.yaml cluster/s3-vs.yaml
+	kubectl -n $(NS) apply -f cluster/s3-svc.yaml | sudo tee $(LOG_DIR)/s3.log
+	kubectl -n $(NS) apply -f cluster/s3-sm.yaml | sudo tee -a $(LOG_DIR)/s3.log
+	kubectl -n $(NS) apply -f cluster/s3-vs.yaml | sudo tee -a $(LOG_DIR)/s3.log
+
+# Update DB and associated monitoring, rebuilding if necessary
+db: $(LOG_DIR)/db.repo.log cluster/awscred.yaml cluster/dynamodb-service-entry.yaml cluster/db.yaml cluster/db-sm.yaml cluster/db-vs.yaml
+	kubectl -n $(NS) apply -f cluster/awscred.yaml | sudo tee $(LOG_DIR)/db.log
+	kubectl -n $(NS) apply -f cluster/dynamodb-service-entry.yaml | sudo tee -a $(LOG_DIR)/db.log
+	kubectl -n $(NS) apply -f cluster/db.yaml | sudo tee -a $(LOG_DIR)/db.log
+	kubectl -n $(NS) apply -f cluster/db-sm.yaml | sudo tee -a $(LOG_DIR)/db.log
+	kubectl -n $(NS) apply -f cluster/db-vs.yaml | sudo tee -a $(LOG_DIR)/db.log
+
+# --- ROLLOUTS
+
+# Rollout a new deployment of S1
+rollout-s1: s1
+	kubectl rollout -n $(NS) restart deployment/cmpt756s1
+
+# Rollout a new deployment of S2
+rollout-s2: $(LOG_DIR)/s2.repo.log  cluster/s2-dpl-v1.yaml
 	kubectl -n $(NS) apply -f cluster/s2-dpl-v1.yaml | sudo tee $(LOG_DIR)/rollout-s2.log
 	kubectl rollout -n $(NS) restart deployment/cmpt756s2-v1 | sudo tee -a $(LOG_DIR)/rollout-s2.log
 
+# Rollout a new deployment of S3
+rollout-s3: $(LOG_DIR)/s3.repo.log  cluster/s3-dpl-v1.yaml
+	kubectl -n $(NS) apply -f cluster/s3-dpl-v1.yaml | sudo tee $(LOG_DIR)/rollout-s3.log
+	kubectl rollout -n $(NS) restart deployment/cmpt756s3-v1 | sudo tee -a $(LOG_DIR)/rollout-s3.log
 
+# Rollout a new deployment of DB
+rollout-db: db
+	kubectl rollout -n $(NS) restart deployment/cmpt756db

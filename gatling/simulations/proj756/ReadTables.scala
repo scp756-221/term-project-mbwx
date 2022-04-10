@@ -28,6 +28,19 @@ object Utility {
   }
 }
 
+object RBook {
+
+  val feeder = csv("book.csv").eager.random
+
+  val rbook = forever("i") {
+    feed(feeder)
+    .exec(http("RBook ${i}")
+      .get("/api/v1/book/${UUID}"))
+      .pause(1)
+  }
+
+}
+
 object RMusic {
 
   val feeder = csv("music.csv").eager.random
@@ -67,6 +80,21 @@ object RUserVarying {
     .pause(1, 60)
   }
 }
+/*
+  After one S3 read, pause a random time between 1 and 60 s
+*/
+
+object RBookVarying {
+  val feeder = csv("book.csv").eager.circular
+
+  val rbook = forever("i") {
+    feed(feeder)
+    .exec(http("RBookVarying ${i}")
+      .get("/api/v1/book/${UUID}"))
+    .pause(1, 60)
+  }
+}
+
 
 /*
   After one S2 read, pause a random time between 1 and 60 s
@@ -86,18 +114,24 @@ object RMusicVarying {
 /*
   Failed attempt to interleave reads from User and Music tables.
   The Gatling EDSL only honours the second (Music) read,
-  ignoring the first read of User. [Shrug-emoji] 
+  ignoring the first read of User. [Shrug-emoji]
  */
 object RBoth {
 
   val u_feeder = csv("users.csv").eager.circular
   val m_feeder = csv("music.csv").eager.random
+  val m_feeder = csv("book.csv").eager.random
 
   val rboth = forever("i") {
     feed(u_feeder)
     .exec(http("RUser ${i}")
       .get("/api/v1/user/${UUID}"))
     .pause(1);
+
+    feed(m_feeder)
+    .exec(http("RBook ${i}")
+      .get("/api/v1/book/${UUID}"))
+      .pause(1)
 
     feed(m_feeder)
     .exec(http("RMusic ${i}")
@@ -125,6 +159,16 @@ class ReadUserSim extends ReadTablesSim {
   ).protocols(httpProtocol)
 }
 
+class ReadBookSim extends ReadTablesSim {
+  val scnReadBook = scenario("ReadBook")
+    .exec(RBook.rbook)
+
+  setUp(
+    scnReadBook.inject(atOnceUsers(Utility.envVarToInt("USERS", 1)))
+  ).protocols(httpProtocol)
+}
+
+
 class ReadMusicSim extends ReadTablesSim {
   val scnReadMusic = scenario("ReadMusic")
     .exec(RMusic.rmusic)
@@ -140,6 +184,9 @@ class ReadMusicSim extends ReadTablesSim {
   is reached for each service.
 */
 class ReadBothVaryingSim extends ReadTablesSim {
+  val scnReadBV = scenario("ReadBookVarying")
+    .exec(RBookVarying.rbook)
+
   val scnReadMV = scenario("ReadMusicVarying")
     .exec(RMusicVarying.rmusic)
 

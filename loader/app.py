@@ -50,6 +50,23 @@ def create_user(lname, fname, email, uuid):
     return (response.json())
 
 
+def create_book(author, title, uuid):
+    """
+    Create a book.
+    If a record already exists with the same book and title,
+    the old UUID is replaced with this one.
+    """
+    url = db['name'] + '/load'
+    response = requests.post(
+        url,
+        auth=build_auth(),
+        json={"objtype": "book",
+              "Artist": author,
+              "SongTitle": title,
+              "uuid": uuid})
+    return (response.json())
+
+
 def create_song(artist, title, uuid):
     """
     Create a song.
@@ -94,7 +111,18 @@ if __name__ == '__main__':
                                                                   ln,
                                                                   email,
                                                                   uuid))
-
+    with open('{}/book/book.csv'.format(resource_dir), 'r') as inp:
+        rdr = csv.reader(inp)
+        next(rdr)  # Skip header
+        for author, title, uuid in rdr:
+            resp = create_book(author.strip(),
+                               title.strip(),
+                               uuid.strip())
+            resp = check_resp(resp, 'author_id')
+            if resp is None or resp != uuid:
+                print('Error creating book {} {}, {}'.format(author,
+                                                             title,
+                                                             uuid))
     with open('{}/music/music.csv'.format(resource_dir), 'r') as inp:
         rdr = csv.reader(inp)
         next(rdr)  # Skip header

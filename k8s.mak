@@ -36,7 +36,7 @@ LOADER_VER=v1
 
 # Kubernetes parameters that most of the time will be unchanged
 # but which you might override as projects become sophisticated
-APP_NS=c756ns
+APP_NS=mbwx-namespace
 ISTIO_NS=istio-system
 
 # this is used to switch M1 Mac to x86 for compatibility with x86 instances/students

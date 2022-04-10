@@ -1,10 +1,32 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Resources": {
+       "tableBook": {
+        "Type": "AWS::DynamoDB::Table",
+        "Properties": {
+          "TableName": "Book-meganhfowler",
+          "AttributeDefinitions": [
+            {
+              "AttributeName": "book_id",
+              "AttributeType": "S"
+            }
+          ],
+          "KeySchema": [
+            {
+              "AttributeName": "book_id",
+              "KeyType": "HASH"
+            }
+          ],
+          "ProvisionedThroughput": {
+            "ReadCapacityUnits": "5",
+            "WriteCapacityUnits": "5"
+          }
+        }
+      },
       "tableMusic": {
         "Type": "AWS::DynamoDB::Table",
         "Properties": {
-          "TableName": "Music",
+          "TableName": "Music-meganhfowler",
           "AttributeDefinitions": [
             {
               "AttributeName": "music_id",
@@ -26,7 +48,7 @@
       "tableUsers": {
         "Type": "AWS::DynamoDB::Table",
         "Properties": {
-          "TableName": "User",
+          "TableName": "User-meganhfowler",
           "AttributeDefinitions": [
             {
               "AttributeName": "user_id",
