@@ -76,7 +76,6 @@ def get_song(music_id):
     response = requests.get(
         url, params=payload, headers={"Authorization": headers["Authorization"]}
     )
-    print(response)
     return (response.json())
 
 

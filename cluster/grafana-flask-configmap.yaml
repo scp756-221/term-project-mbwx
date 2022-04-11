@@ -186,7 +186,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(process_resident_memory_bytes{namespace=\"c756ns\"})",
+              "expr": "sum(process_resident_memory_bytes{namespace=\"mbwx-namespace\"})",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -489,7 +489,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(process_cpu_seconds_total{namespace=\"c756ns\"}[1m]))",
+              "expr": "sum(rate(process_cpu_seconds_total{namespace=\"mbwx-namespace\"}[1m]))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -825,7 +825,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(process_open_fds{namespace=\"c756ns\"})",
+              "expr": "sum(process_open_fds{namespace=\"mbwx-namespace\"})",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,

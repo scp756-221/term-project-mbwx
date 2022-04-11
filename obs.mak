@@ -21,7 +21,7 @@ HELM=helm
 LOG_DIR=logs
 
 # these might need to change
-APP_NS=c756ns
+APP_NS=mbwx-namespace
 ISTIO_NS=istio-system
 KIALI_OP_NS=kiali-operator
 

@@ -24,15 +24,10 @@ LOG_DIR=logs
 # Need to switch this PERSONAL INFO
 CREG=ghcr.io
 REGID=wla194-tommy
-
 # Launch app
 launch:
 	make -f cluster.mak cluster-up
-	make -f cluster.mak db
-	make -f cluster.mak s1
-	make -f cluster.mak s2
-	make -f cluster.mak s3
-	make -f cluster.mak gw
+	make -f cluster.mak provision
 	make -f cluster.mak cri
 
 
@@ -40,7 +35,6 @@ launch:
 cluster-up:
 	make -f cluster.mak start
 	make -f cluster.mak name
-	make -f cluster.mak istio
 	make -f cluster.mak showcontext
 	make -f cluster.mak describe
 	make -f cluster.mak lsa
@@ -195,13 +189,19 @@ rollout-db: db
 
 provision: istio prom deploy
 
-deploy: appns gw s1 s2 db monitoring
+deploy: appns gw s1 s2 s3 db monitoring
 	$(KC) -n $(APP_NS) get gw,vs,deploy,svc,pods
 
 # --- grafana-url: Print the URL to browse Grafana in current cluster
+IP_GET_CMD=tools/getip.sh $(KC) $(ISTIO_NS)
+
 grafana-url:
 	@# Use back-tick for subshell so as not to confuse with make $() variable notation
 	@/bin/sh -c 'echo http://`$(IP_GET_CMD) svc/grafana-ingress`:3000/'
+
+prometheus-url:
+	@# Use back-tick for subshell so as not to confuse with make $() variable notation
+	@/bin/sh -c 'echo http://`$(IP_GET_CMD) svc/prom-ingress`:9090/'
 
 prom:
 	make -f obs.mak init-helm --no-print-directory

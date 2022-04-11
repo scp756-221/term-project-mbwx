@@ -14,7 +14,7 @@ spec:
   hosts:
   - "*"
   gateways:
-  - c756ns/c756-gateway
+  - mbwx-namespace/c756-gateway
   http:
   - match:
     - uri:
