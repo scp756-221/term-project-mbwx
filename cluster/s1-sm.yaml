@@ -8,7 +8,7 @@ metadata:
 spec:
   namespaceSelector:
     matchNames:
-    - c756ns
+    - mbwx-namespace
   selector:
     matchLabels:
       app: cmpt756s1

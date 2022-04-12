@@ -76,7 +76,7 @@ def get_book(book_id):
     response = requests.get(
         url, params=payload, headers={"Authorization": headers["Authorization"]}
     )
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/", methods=["POST"])
@@ -101,7 +101,7 @@ def create_book():
         json={"objtype": "book", "Author": Author, "BookTitle": BookTitle},
         headers={"Authorization": headers["Authorization"]},
     )
-    return response.json()
+    return (response.json())
 
 
 @bp.route("/<book_id>", methods=["DELETE"])
@@ -120,7 +120,7 @@ def delete_book(book_id):
         params={"objtype": "book", "objkey": book_id},
         headers={"Authorization": headers["Authorization"]},
     )
-    return response.json()
+    return (response.json())
 
 
 # All database calls will have this prefix.  Prometheus metric

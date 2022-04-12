@@ -76,7 +76,7 @@ spec:
       serviceAccountName: svc-db
       containers:
       - name: cmpt756db
-        image: 'docker.io/meganhfowler/cmpt756db:v1'
+        image: 'ghcr.io/wla194-tommy/cmpt756db:v1'
         imagePullPolicy: Always
         env:
         - name: SVC_LOADER_TOKEN
